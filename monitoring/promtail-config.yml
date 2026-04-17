@@ -1,0 +1,56 @@
+# Promtail Configuration for GRC MCP Server
+server:
+  http_listen_port: 9080
+  grpc_listen_port: 0
+
+positions:
+  filename: /tmp/positions.yaml
+
+clients:
+  - url: http://loki:3100/loki/api/v1/push
+
+scrape_configs:
+  # GRC MCP Server Logs
+  - job_name: grc-mcp-server
+    static_configs:
+      - targets:
+          - localhost
+        labels:
+          job: grc-mcp-server
+          app: grc-mcp-server
+          environment: development
+          __path__: /var/log/grc-mcp/*.log
+
+    # Pipeline stages for JSON log parsing
+    pipeline_stages:
+      # Parse JSON logs
+      - json:
+          expressions:
+            timestamp: timestamp
+            level: level
+            logger: logger
+            message: message
+            trace_id: trace_id
+            span_id: span_id
+            user_id: user_id
+            tool_name: tool_name
+            operation: operation
+            object_type: object_type
+            duration_ms: duration_ms
+            error_type: error_type
+
+      # Extract timestamp
+      - timestamp:
+          source: timestamp
+          format: RFC3339Nano
+
+      # Only use essential labels (job, app, level)
+      # Other fields remain in the log line and can be queried
+      - labels:
+          level:
+
+      # Output the full structured message
+      - output:
+          source: message
+
+# Made with Bob
