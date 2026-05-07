@@ -224,6 +224,60 @@ chown -R 1000:1000 logs  # Required for Podman to match container user UID:GID
    - Load balancing capabilities
    - Configuration via [`nginx/nginx.conf`](nginx/nginx.conf)
 
+
+#### Option 4: IBM Code Engine Deployment
+
+**Best for**: Cloud-native deployments, serverless architecture, auto-scaling, IBM Cloud integration
+
+IBM Code Engine provides a fully managed serverless platform for running containerized applications.
+
+**Quick Start** (if you already have Code Engine setup):
+```bash
+# Add missing environment variables to your existing deployment
+ibmcloud ce application update --name openpages-mcp-v2 \
+  --env SERVER_MODE=remote \
+  --env PORT=8000 \
+  --env HOST=0.0.0.0 \
+  --env OBSERVABILITY_ENABLED=True \
+  --env METRICS_ENABLED=True \
+  --env TRACING_ENABLED=False
+```
+
+**Full Deployment** (new deployment):
+```bash
+# Use the automated deployment script
+./deploy-code-engine.sh --namespace my-namespace
+
+# Or deploy from source
+./deploy-code-engine.sh --build-from-source
+
+# Or deploy with custom settings
+./deploy-code-engine.sh --min-scale 2 --max-scale 10 --cpu 2 --memory 4G
+```
+
+**Key Features**:
+- ✅ Auto-scaling (scale to zero when idle)
+- ✅ Built-in load balancing
+- ✅ Automatic health checks
+- ✅ Zero infrastructure management
+- ✅ Pay only for actual usage
+- ✅ Integrated with IBM Cloud services
+
+**Documentation**:
+- 📖 [Quick Start Guide](QUICK_START_CODE_ENGINE.md) - Get running in minutes
+- 📖 [Variable Reference](CODE_ENGINE_VARIABLES.md) - Environment variable mapping
+- 📖 [Full Deployment Guide](docs/CODE_ENGINE_DEPLOYMENT.md) - Comprehensive instructions
+- 🔧 [Deployment Script](deploy-code-engine.sh) - Automated deployment tool
+
+**Access Points** (after deployment):
+```bash
+# Get your application URL
+ibmcloud ce application get --name openpages-mcp-server --output url
+
+# Test health endpoint
+curl $(ibmcloud ce application get --name openpages-mcp-server --output url)/health
+```
+
 **Note**: The server works independently with or without the monitoring stack. Monitoring is optional and can be added/removed at any time.
 #### Option 3: Manual Setup
 
